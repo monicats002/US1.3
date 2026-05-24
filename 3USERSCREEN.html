@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seen — Where's the issue?</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal: #0F4C53;
+  --teal-deep: #082F34;
+  --teal-light: rgba(15, 76, 83, 0.08);
+  --teal-border: rgba(15, 76, 83, 0.18);
+  --teal-mist: #ECF1F1;
+  --ink: #1F2735;
+  --ink-deep: #0C111B;
+  --bg-warm: #FAFAF7;
+  --bg-warmer: #F5F3EC;
+  --text-primary: #0A0908;
+  --text-dark: #3E3833;
+  --text-secondary: #5F5C53;
+  --text-tertiary: #6B6960;   /* was #A8A598 — darkened to 6.74:1 on cream (passes AA) */
+  --text-faint: #8F8C82;       /* was #C8C5B8 — darkened to 3.51:1 (large-text AA) */
+  --text-muted: #5F5C53;       /* was #757369 — bumped to match secondary; 6.02:1 on panel */
+  --border-soft: #E8E6DD;
+  --border-softer: #F1EFE8;
+  --dashed: rgba(40, 37, 37, 0.20);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 390px;
+  height: 792px;
+  overflow: hidden;
+}
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: transparent;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================================
+   PHONE FRAME — identical to screen 1 / 2
+   ========================================================= */
+.phone-frame {
+  background: #0D0D0D;
+  border-radius: 58px;
+  padding: 6px;
+  width: 390px;
+  position: relative;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 0 0 2px rgba(0, 0, 0, 0.85);
+}
+.phone-frame::after {
+  content: '';
+  position: absolute;
+  right: -2.5px;
+  top: 175px;
+  width: 3.5px;
+  height: 80px;
+  background: linear-gradient(90deg, #1A1A1A, #2A2A2A);
+  border-radius: 0 2px 2px 0;
+}
+.phone-frame::before {
+  content: '';
+  position: absolute;
+  left: -2.5px;
+  top: 195px;
+  width: 3.5px;
+  height: 38px;
+  background: linear-gradient(90deg, #2A2A2A, #1A1A1A);
+  border-radius: 2px 0 0 2px;
+  box-shadow: 0 50px 0 -8px #2A2A2A;
+}
+.phone-screen {
+  background: var(--bg-warm);
+  border-radius: 52px;
+  overflow: hidden;
+  height: 780px;
+  position: relative;
+}
+.phone-screen::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 122px;
+  height: 35px;
+  background: #000;
+  border-radius: 999px;
+  z-index: 50;
+}
+
+/* =========================================================
+   STATUS BAR — matches screens 1 and 2
+   ========================================================= */
+.phone-statusbar {
+  padding: 20px 32px 0;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+.phone-statusbar-icons { display: flex; gap: 5px; align-items: center; }
+.phone-statusbar-signal { display: flex; gap: 1.5px; align-items: flex-end; }
+.phone-statusbar-signal span { width: 2.8px; background: var(--text-primary); border-radius: 0.5px; }
+.phone-statusbar-signal span:nth-child(1) { height: 4px; }
+.phone-statusbar-signal span:nth-child(2) { height: 6px; }
+.phone-statusbar-signal span:nth-child(3) { height: 8px; }
+.phone-statusbar-signal span:nth-child(4) { height: 10px; }
+.phone-statusbar-battery {
+  width: 24px; height: 12px; border: 1.3px solid var(--text-primary);
+  border-radius: 3px; padding: 1px; position: relative;
+}
+.phone-statusbar-battery::after {
+  content: ''; position: absolute; right: -3px; top: 3px;
+  width: 1.5px; height: 4px; background: var(--text-primary);
+  border-radius: 0 1px 1px 0;
+}
+.phone-statusbar-battery-fill {
+  background: var(--text-primary); height: 100%; border-radius: 1px; width: 80%;
+}
+
+/* =========================================================
+   SCROLL CONTAINER — universal 22px horizontal padding
+   ========================================================= */
+.phone-content {
+  height: calc(780px - 58px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 22px 30px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+  scroll-behavior: smooth;
+}
+.phone-content::-webkit-scrollbar { display: none; }
+
+/* =========================================================
+   BACK BUTTON — pill, margin-top 34 per spec
+   ========================================================= */
+.back-row {
+  margin-top: 34px;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 6px 10px 6px 6px;
+  background: rgba(15, 76, 83, 0.06);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.22s ease;
+}
+.back-btn:hover {
+  background: rgba(15, 76, 83, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(10, 9, 8, 0.07);
+}
+.back-btn:active {
+  transform: scale(0.96);
+}
+.back-circle {
+  display: flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+}
+.back-circle svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+.back-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+/* =========================================================
+   HEADING — "Where's the issue?" margin-top 28
+   ========================================================= */
+.page-heading {
+  margin-top: 28px;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+}
+
+/* =========================================================
+   YOUR BERTH CARD — margin-top 22
+   ========================================================= */
+.berth-card-wrap {
+  margin-top: 22px;
+  position: relative;
+}
+.berth-card {
+  background: white;
+  border: 1px solid var(--teal);
+  border-radius: 16px;
+  padding: 18px 14px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  position: relative;
+  box-shadow:
+    0 4px 16px rgba(15, 76, 83, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: box-shadow 0.25s ease, transform 0.18s ease;
+}
+.berth-card::before {
+  /* Subtle radial accent glow in the top-right for warmth */
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 140px;
+  height: 60px;
+  background: radial-gradient(ellipse at top right, rgba(15, 76, 83, 0.05) 0%, transparent 70%);
+  border-radius: 16px;
+  pointer-events: none;
+}
+.berth-card:hover {
+  box-shadow:
+    0 8px 24px rgba(15, 76, 83, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.berth-card-tag {
+  position: absolute;
+  top: -7px;
+  left: 15px;
+  padding: 3px 10px;
+  background: linear-gradient(180deg, var(--teal) 0%, var(--teal-deep) 100%);
+  border-radius: 999px;
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow:
+    0 3px 8px rgba(15, 76, 83, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.berth-card-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.berth-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+}
+.berth-card-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.use-location-btn {
+  width: 117px;
+  height: 34px;
+  padding: 9px 14px;
+  background: linear-gradient(180deg, var(--teal) 0%, var(--teal-deep) 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.14s ease, box-shadow 0.22s ease, background 0.22s ease, width 0.3s ease, height 0.3s ease, border 0.3s ease, color 0.3s ease, border-radius 0.3s ease;
+  box-shadow:
+    0 5px 14px rgba(15, 76, 83, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.use-location-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+.use-location-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 20px rgba(15, 76, 83, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.use-location-btn:active,
+.use-location-btn.is-auto-pressed {
+  transform: scale(0.96);
+}
+/* Selected state — 89×31, white bg, black stroke */
+.use-location-btn.is-selected {
+  width: 89px;
+  height: 31px;
+  background: #FDFFFF;
+  border: 1px solid #000000;
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(10, 9, 8, 0.06);
+  gap: 3px;
+}
+.use-location-btn.is-selected::before {
+  display: none;
+}
+.use-location-btn.is-selected:hover {
+  box-shadow: 0 4px 12px rgba(10, 9, 8, 0.10);
+}
+.use-location-btn .tick-icon {
+  display: none;
+}
+.use-location-btn.is-selected .tick-icon {
+  display: inline-flex;
+  align-items: center;
+}
+.use-location-btn .label-default { display: inline; }
+.use-location-btn .label-selected { display: none; }
+.use-location-btn.is-selected .label-default { display: none; }
+.use-location-btn.is-selected .label-selected { display: inline; }
+
+/* =========================================================
+   DIVIDER — top 16, bottom 22
+   ========================================================= */
+.divider-row {
+  margin-top: 16px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--border-soft) 30%, var(--border-soft) 70%, transparent 100%);
+}
+.divider-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+/* =========================================================
+   CONTENT BOX (padding L 6, R 9) — wraps segmented + jump + berths
+   ========================================================= */
+.content-box {
+  padding-left: 6px;
+  padding-right: 9px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   COACH CONTEXT — small pill showing current coach, tap to expand
+   ========================================================= */
+.coach-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.coach-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.22s ease;
+}
+.coach-pill:hover {
+  border-color: var(--teal);
+  box-shadow: 0 3px 10px rgba(15, 76, 83, 0.08);
+}
+.coach-pill:active { transform: scale(0.97); }
+.coach-pill.is-open {
+  background: var(--teal-light);
+  border-color: var(--teal);
+}
+.coach-pill-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.coach-pill-value {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -0.2px;
+}
+.coach-pill-chev {
+  color: var(--text-secondary);
+  transition: transform 0.22s ease;
+}
+.coach-pill.is-open .coach-pill-chev {
+  transform: rotate(180deg);
+}
+.coach-context-hint {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+  flex: 1;
+  text-align: right;
+}
+.coach-context-hint.is-changed {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.coach-picker {
+  margin-bottom: 14px;
+  padding: 8px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.coach-picker[hidden] { display: none; }
+.coach-picker-track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+.coach-picker-track::-webkit-scrollbar { display: none; }
+.coach-btn {
+  flex-shrink: 0;
+  min-width: 42px;
+  height: 32px;
+  padding: 0 10px;
+  background: var(--bg-warmer);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.12s ease;
+}
+.coach-btn:hover {
+  border-color: var(--teal);
+  transform: translateY(-1px);
+}
+.coach-btn:active { transform: scale(0.95); }
+.coach-btn.is-selected {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: white;
+}
+/* "Home" badge on the user's booked coach (S4) */
+.coach-btn.is-home::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #FFB547;
+  box-shadow: 0 0 0 1.5px white;
+}
+.coach-btn.is-home.is-selected::after {
+  box-shadow: 0 0 0 1.5px var(--teal);
+}
+
+/* Segmented control: Berths | Toilets | Common — premium */
+.segmented {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-warmer);
+  padding: 4px;
+  border-radius: 12px;
+}
+.segment-btn {
+  flex: 1;
+  height: 36px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.14s ease, box-shadow 0.25s ease;
+}
+.segment-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.6);
+}
+.segment-btn:active { transform: scale(0.97); }
+.segment-btn.is-selected {
+  background: linear-gradient(180deg, var(--text-primary) 0%, #1F1B16 100%);
+  color: white;
+  box-shadow:
+    0 4px 12px rgba(10, 9, 8, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.segment-btn.is-selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, transparent 50%);
+  pointer-events: none;
+  border-radius: 9px;
+}
+
+/* =========================================================
+/* =========================================================
+   JUMP TO BAY — premium horizontal carousel
+   ========================================================= */
+.jump-section {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.jump-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.jump-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.jump-hint {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.jump-track {
+  position: relative;
+  /* Soft fade-out at the right edge to hint scrollability */
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+.jump-track-inner {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 32px 8px 2px;  /* right padding accounts for fade mask */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+}
+.jump-track-inner::-webkit-scrollbar { display: none; }
+
+.bay-btn {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  width: 60px;
+  height: 64px;
+  padding: 0;
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-family: inherit;
+  color: var(--text-primary);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease,
+              transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+}
+.bay-btn::before {
+  /* Subtle gradient sheen for premium feel */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 35%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.bay-btn:hover {
+  border-color: var(--teal);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(15, 76, 83, 0.08);
+}
+.bay-btn:hover::before { opacity: 1; }
+.bay-btn:active { transform: scale(0.96); }
+
+.bay-btn.is-selected {
+  background: linear-gradient(180deg, var(--ink) 0%, var(--ink-deep) 100%);
+  border-color: var(--ink-deep);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 20px rgba(12, 17, 27, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.bay-btn.is-selected::before {
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+}
+
+.bay-num {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.4px;
+}
+.bay-range {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.bay-btn.is-selected .bay-range {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 700;
+}
+
+/* =========================================================
+   LOCATION PANELS — Berth (default), Toilets, Common
+   Premium cream container with subtle inner glow
+   ========================================================= */
+.berth-panel,
+.location-panel {
+  margin-top: 24px;
+  padding: 16px 14px;
+  background: var(--bg-warmer);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+}
+.berth-panel[hidden],
+.location-panel[hidden] {
+  display: none;
+}
+.berth-panel-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+.berth-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.berth-panel-hint {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+/* Berth row + premium button */
+.berth-row {
+  display: flex;
+  gap: 6px;
+}
+.berth-btn {
+  flex: 1;
+  min-width: 0;
+  height: 54px;
+  padding: 10px 4px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.16s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+}
+.berth-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 35%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.berth-btn:hover {
+  border-color: var(--teal);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 76, 83, 0.08);
+}
+.berth-btn:hover::before { opacity: 1; }
+.berth-btn:active { transform: scale(0.97); }
+.berth-btn.is-selected {
+  background: linear-gradient(180deg, var(--ink) 0%, var(--ink-deep) 100%);
+  border-color: var(--ink-deep);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 16px rgba(12, 17, 27, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.berth-btn.is-selected::before {
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 50%);
+}
+.berth-num {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -0.2px;
+}
+.berth-pos {
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.berth-btn.is-selected .berth-num { color: white; }
+.berth-btn.is-selected .berth-pos { color: rgba(255, 255, 255, 0.78); }
+
+/* =========================================================
+   FACILITY CELLS — toilets, common areas — premium
+   ========================================================= */
+.vestibule-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.vestibule-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vestibule-zone-label {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+.vestibule-zone-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+.common-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.facility-cell {
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 12px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 70px;
+  color: var(--teal);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.16s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+}
+.facility-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 35%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.facility-cell:hover {
+  border-color: var(--teal);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 76, 83, 0.08);
+}
+.facility-cell:hover::before { opacity: 1; }
+.facility-cell:active { transform: scale(0.97); }
+.facility-cell.is-selected {
+  background: linear-gradient(180deg, var(--ink) 0%, var(--ink-deep) 100%);
+  border-color: var(--ink-deep);
+  box-shadow:
+    0 6px 16px rgba(12, 17, 27, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.facility-cell.is-selected::before {
+  opacity: 1;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 50%);
+}
+.facility-cell.is-selected .facility-label,
+.facility-cell.is-selected .facility-sub {
+  color: white;
+}
+.facility-cell.is-selected .facility-icon {
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+}
+.facility-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(15, 76, 83, 0.08);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.facility-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: -0.1px;
+}
+.facility-sub {
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+/* =========================================================
+   ATTACHMENTS ROW — top 24 from prior section
+   ========================================================= */
+.attachments-section {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.attach-btn {
+  width: 160px;
+  height: 77px;
+  padding: 14px 10px;
+  background: white;
+  border: 1.5px dashed var(--border-soft);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.16s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.attach-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 35%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.attach-btn:hover {
+  border-color: var(--teal);
+  border-style: solid;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 76, 83, 0.10);
+}
+.attach-btn:hover::before { opacity: 1; }
+.attach-btn:active { transform: scale(0.98); }
+.attach-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.attach-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.1px;
+  line-height: 1;
+}
+
+/* =========================================================
+   SUBMIT BUTTON — top 32
+   ========================================================= */
+.submit-wrap {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+}
+.submit-btn {
+  width: 100%;
+  height: 54px;
+  padding: 16px;
+  background: linear-gradient(180deg, var(--teal) 0%, var(--teal-deep) 100%);
+  border: none;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 6px 16px rgba(15, 76, 83, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  transition: transform 0.14s ease, box-shadow 0.22s ease;
+}
+.submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 22px rgba(15, 76, 83, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.submit-btn:active,
+.submit-btn.is-auto-pressed {
+  transform: scale(0.985);
+  box-shadow:
+    0 3px 10px rgba(15, 76, 83, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* =========================================================
+   AUTO-TAP INDICATOR — same frosted-glass spec as screen 2
+   ========================================================= */
+.auto-tap-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 6px 16px rgba(10, 9, 8, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03);
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  transform: translate(var(--tx, 0px), var(--ty, 0px));
+  transition: transform 1.6s cubic-bezier(0.45, 0.05, 0.4, 1), opacity 0.4s ease;
+}
+.auto-tap-indicator.is-visible { opacity: 1; }
+.auto-tap-indicator.is-tapping {
+  transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(0.78);
+  transition: transform 0.18s ease;
+}
+.auto-tap-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: rgba(15, 76, 83, 0.65);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.auto-tap-indicator::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid rgba(15, 76, 83, 0.7);
+  opacity: 0;
+}
+.auto-tap-indicator.is-tapping::after {
+  animation: autoTapRing 0.7s ease-out;
+}
+@keyframes autoTapRing {
+  0%   { opacity: 0.9; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(2.4); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <div class="phone-screen">
+
+    <!-- ============ STATUS BAR ============ -->
+    <div class="phone-statusbar">
+      <span>9:41</span>
+      <div class="phone-statusbar-icons">
+        <div class="phone-statusbar-signal"><span></span><span></span><span></span><span></span></div>
+        <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
+          <path d="M7 1.5C9 1.5 11 2.5 12.5 4M7 4.5C8 4.5 9 5 9.5 5.5M7 8.5L7 8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <div class="phone-statusbar-battery"><div class="phone-statusbar-battery-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- ============ SCROLLABLE CONTENT ============ -->
+    <div class="phone-content" id="phoneContent">
+
+      <div class="auto-tap-indicator" id="autoTapIndicator"></div>
+
+      <!-- BACK BUTTON -->
+      <div class="back-row">
+        <button class="back-btn" id="backBtn" aria-label="Back">
+          <span class="back-circle">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="18" height="18" rx="9" fill="#0A0908"/>
+              <path d="M8.85016 12H7.46416L5.37616 9.786V9.3L7.46416 7.104H8.85016L6.24916 9.939V9.147L8.85016 12ZM11.0372 10.074H6.32116V9.03H11.0372V10.074Z" fill="white"/>
+            </svg>
+          </span>
+          <span class="back-label">Back</span>
+        </button>
+      </div>
+
+      <!-- HEADING -->
+      <h1 class="page-heading">Where's the issue?</h1>
+
+      <!-- YOUR BERTH CARD -->
+      <div class="berth-card-wrap">
+        <div class="berth-card">
+          <div class="berth-card-tag">Your berth</div>
+          <div class="berth-card-text">
+            <div class="berth-card-title">Berth 31 · Lower · Bay 4</div>
+            <div class="berth-card-sub">Pre-filled from your booking</div>
+          </div>
+          <button class="use-location-btn" id="useLocationBtn">
+            <span class="tick-icon">
+              <!-- Tick_icon.svg (user-supplied, verbatim) -->
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.5 6.5L4.5 8.5L9.5 3.5" stroke="#121212" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="label-default">Use this location</span>
+            <span class="label-selected">Selected</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- DIVIDER -->
+      <div class="divider-row">
+        <div class="divider-line"></div>
+        <div class="divider-label">OR REPORT FROM ELSEWHERE</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- CONTENT BOX (padding-left 6, padding-right 9) -->
+      <div class="content-box">
+
+        <!-- Coach context pill: shows current coach, taps to expand picker -->
+        <div class="coach-context">
+          <button class="coach-pill" id="coachPill">
+            <span class="coach-pill-label">Coach</span>
+            <span class="coach-pill-value" id="coachPillValue">S4</span>
+            <svg class="coach-pill-chev" width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <span class="coach-context-hint" id="coachContextHint"></span>
+        </div>
+
+        <!-- Coach picker (collapsible — opens on tap) -->
+        <div class="coach-picker" id="coachPicker" hidden>
+          <div class="coach-picker-track">
+            <button class="coach-btn" data-coach="S1">S1</button>
+            <button class="coach-btn" data-coach="S2">S2</button>
+            <button class="coach-btn" data-coach="S3">S3</button>
+            <button class="coach-btn is-selected is-home" data-coach="S4">S4</button>
+            <button class="coach-btn" data-coach="S5">S5</button>
+            <button class="coach-btn" data-coach="S6">S6</button>
+            <button class="coach-btn" data-coach="S7">S7</button>
+            <button class="coach-btn" data-coach="S8">S8</button>
+            <button class="coach-btn" data-coach="S9">S9</button>
+            <button class="coach-btn" data-coach="S10">S10</button>
+            <button class="coach-btn" data-coach="A1">A1</button>
+            <button class="coach-btn" data-coach="A2">A2</button>
+            <button class="coach-btn" data-coach="B1">B1</button>
+            <button class="coach-btn" data-coach="B2">B2</button>
+          </div>
+        </div>
+
+        <!-- Segmented: Berths / Toilets / Common -->
+        <div class="segmented" id="segmented">
+          <button class="segment-btn is-selected" data-seg="berths">Berths</button>
+          <button class="segment-btn" data-seg="toilets">Toilets</button>
+          <button class="segment-btn" data-seg="common">Common</button>
+        </div>
+
+        <!-- Jump to bay — premium carousel -->
+        <div class="jump-section">
+          <div class="jump-head">
+            <div class="jump-eyebrow">Jump to bay</div>
+            <div class="jump-hint">9 bays · 8 berths each</div>
+          </div>
+          <div class="jump-track" id="jumpTrack">
+            <div class="jump-track-inner">
+              <button class="bay-btn" data-bay="1"><span class="bay-num">1</span><span class="bay-range">1–8</span></button>
+              <button class="bay-btn" data-bay="2"><span class="bay-num">2</span><span class="bay-range">9–16</span></button>
+              <button class="bay-btn" data-bay="3"><span class="bay-num">3</span><span class="bay-range">17–24</span></button>
+              <button class="bay-btn is-selected" data-bay="4"><span class="bay-num">4</span><span class="bay-range">25–32</span></button>
+              <button class="bay-btn" data-bay="5"><span class="bay-num">5</span><span class="bay-range">33–40</span></button>
+              <button class="bay-btn" data-bay="6"><span class="bay-num">6</span><span class="bay-range">41–48</span></button>
+              <button class="bay-btn" data-bay="7"><span class="bay-num">7</span><span class="bay-range">49–56</span></button>
+              <button class="bay-btn" data-bay="8"><span class="bay-num">8</span><span class="bay-range">57–64</span></button>
+              <button class="bay-btn" data-bay="9"><span class="bay-num">9</span><span class="bay-range">65–72</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Berth Panel -->
+        <div class="berth-panel" id="berthPanel">
+          <div class="berth-panel-eyebrow"><span id="bayLabel">Bay 4</span> · <span id="bayRangeLabel">Berth 25–32</span></div>
+          <div class="berth-row">
+            <button class="berth-btn" data-berth="25" data-pos="UP">
+              <span class="berth-num">25</span>
+              <span class="berth-pos">Up</span>
+            </button>
+            <button class="berth-btn" data-berth="26" data-pos="MID">
+              <span class="berth-num">26</span>
+              <span class="berth-pos">Mid</span>
+            </button>
+            <button class="berth-btn" data-berth="27" data-pos="LOW">
+              <span class="berth-num">27</span>
+              <span class="berth-pos">Low</span>
+            </button>
+            <button class="berth-btn is-selected" data-berth="31" data-pos="LOW">
+              <span class="berth-num">31</span>
+              <span class="berth-pos">Low</span>
+            </button>
+          </div>
+          <div class="berth-row">
+            <button class="berth-btn" data-berth="28" data-pos="UP">
+              <span class="berth-num">28</span>
+              <span class="berth-pos">Up</span>
+            </button>
+            <button class="berth-btn" data-berth="29" data-pos="MID">
+              <span class="berth-num">29</span>
+              <span class="berth-pos">Mid</span>
+            </button>
+            <button class="berth-btn" data-berth="30" data-pos="LOW">
+              <span class="berth-num">30</span>
+              <span class="berth-pos">Low</span>
+            </button>
+            <button class="berth-btn" data-berth="32" data-pos="LOW">
+              <span class="berth-num">32</span>
+              <span class="berth-pos">Low</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Toilets Panel — hidden until toilets segment selected -->
+        <div class="location-panel" id="toiletsPanel" hidden>
+          <div class="berth-panel-head">
+            <div class="berth-panel-eyebrow">Toilets & washbasins</div>
+            <div class="berth-panel-hint">4 toilets per coach</div>
+          </div>
+          <div class="vestibule-zones">
+            <div class="vestibule-zone">
+              <div class="vestibule-zone-label">Vestibule A · Front</div>
+              <div class="vestibule-zone-grid">
+                <button class="facility-cell" data-facility="t1">
+                  <span class="facility-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="7" y="3" width="10" height="14" rx="2"/>
+                      <path d="M9 7h6M10 17v3M14 17v3"/>
+                    </svg>
+                  </span>
+                  <span class="facility-label">Toilet 1</span>
+                  <span class="facility-sub">Indian</span>
+                </button>
+                <button class="facility-cell" data-facility="t2">
+                  <span class="facility-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 4h8v8a4 4 0 01-8 0V4z"/>
+                      <path d="M10 12v4M14 12v4M9 20h6"/>
+                    </svg>
+                  </span>
+                  <span class="facility-label">Toilet 2</span>
+                  <span class="facility-sub">Western</span>
+                </button>
+                <button class="facility-cell" data-facility="wb-a">
+                  <span class="facility-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 11h16v3a4 4 0 01-4 4H8a4 4 0 01-4-4v-3z"/>
+                      <path d="M12 4v7M9 7h6"/>
+                    </svg>
+                  </span>
+                  <span class="facility-label">Washbasin</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="vestibule-zone">
+              <div class="vestibule-zone-label">Vestibule B · Rear</div>
+              <div class="vestibule-zone-grid">
+                <button class="facility-cell" data-facility="t3">
+                  <span class="facility-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="7" y="3" width="10" height="14" rx="2"/>
+                      <path d="M9 7h6M10 17v3M14 17v3"/>
+                    </svg>
+                  </span>
+                  <span class="facility-label">Toilet 3</span>
+                  <span class="facility-sub">Indian</span>
+                </button>
+                <button class="facility-cell" data-facility="t4">
+                  <span class="facility-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 4h8v8a4 4 0 01-8 0V4z"/>
+                      <path d="M10 12v4M14 12v4M9 20h6"/>
+                    </svg>
+                  </span>
+                  <span class="facility-label">Toilet 4</span>
+                  <span class="facility-sub">Western</span>
+                </button>
+                <button class="facility-cell" data-facility="wb-b">
+                  <span class="facility-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 11h16v3a4 4 0 01-4 4H8a4 4 0 01-4-4v-3z"/>
+                      <path d="M12 4v7M9 7h6"/>
+                    </svg>
+                  </span>
+                  <span class="facility-label">Washbasin</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Common Panel — hidden until common segment selected -->
+        <div class="location-panel" id="commonPanel" hidden>
+          <div class="berth-panel-head">
+            <div class="berth-panel-eyebrow">Coach common areas</div>
+            <div class="berth-panel-hint">Shared spaces</div>
+          </div>
+          <div class="common-grid">
+            <button class="facility-cell" data-facility="aisle">
+              <span class="facility-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 3v18M15 3v18"/>
+                </svg>
+              </span>
+              <span class="facility-label">Aisle</span>
+            </button>
+            <button class="facility-cell" data-facility="charging">
+              <span class="facility-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>
+                </svg>
+              </span>
+              <span class="facility-label">Charging</span>
+              <span class="facility-sub">Sockets / ports</span>
+            </button>
+            <button class="facility-cell" data-facility="water">
+              <span class="facility-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l-5 9a5 5 0 0010 0L12 3z"/>
+                </svg>
+              </span>
+              <span class="facility-label">Water</span>
+              <span class="facility-sub">Dispenser</span>
+            </button>
+            <button class="facility-cell" data-facility="luggage">
+              <span class="facility-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="8" width="14" height="13" rx="2"/>
+                  <path d="M9 8V5h6v3M10 12v5M14 12v5"/>
+                </svg>
+              </span>
+              <span class="facility-label">Luggage</span>
+              <span class="facility-sub">Rack / area</span>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /.content-box -->
+
+      <!-- ATTACHMENTS -->
+      <div class="attachments-section">
+        <button class="attach-btn" id="attachPhoto">
+          <span class="attach-icon-wrap">
+            <!-- Icon.svg (user-supplied, verbatim) — Camera -->
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="28" height="28" rx="8" fill="#0F4C53" fill-opacity="0.08"/>
+              <path d="M18.6667 10H9.33333C8.59695 10 8 10.597 8 11.3333V18C8 18.7364 8.59695 19.3333 9.33333 19.3333H18.6667C19.403 19.3333 20 18.7364 20 18V11.3333C20 10.597 19.403 10 18.6667 10Z" stroke="#0F4C53" stroke-width="1.06667"/>
+              <path d="M14.0001 16.9999C15.2887 16.9999 16.3334 15.9552 16.3334 14.6666C16.3334 13.3779 15.2887 12.3333 14.0001 12.3333C12.7114 12.3333 11.6667 13.3779 11.6667 14.6666C11.6667 15.9552 12.7114 16.9999 14.0001 16.9999Z" stroke="#0F4C53" stroke-width="1.06667"/>
+              <path d="M11.3333 10.0001L12.3333 8.66675H15.6666L16.6666 10.0001" stroke="#0F4C53" stroke-width="1.06667" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="attach-label">Add photo / file</span>
+        </button>
+
+        <button class="attach-btn" id="attachVoice">
+          <span class="attach-icon-wrap">
+            <!-- Icon-1.svg (user-supplied, verbatim) — Microphone -->
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="28" height="28" rx="8" fill="#0F4C53" fill-opacity="0.08"/>
+              <path d="M16 10C16 8.89543 15.1046 8 14 8C12.8954 8 12 8.89543 12 10V14C12 15.1046 12.8954 16 14 16C15.1046 16 16 15.1046 16 14V10Z" stroke="#0F4C53" stroke-width="1.06667"/>
+              <path d="M9.33325 13.3333C9.33325 15.9106 11.4226 17.9999 13.9999 17.9999C16.5773 17.9999 18.6666 15.9106 18.6666 13.3333" stroke="#0F4C53" stroke-width="1.06667" stroke-linecap="round"/>
+              <path d="M13.9999 18V20.6667M11.3333 20.6667H16.6666" stroke="#0F4C53" stroke-width="1.06667" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="attach-label">Voice note</span>
+        </button>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-wrap">
+        <button class="submit-btn" id="submitBtn">Submit</button>
+      </div>
+
+    </div><!-- /.phone-content -->
+
+  </div><!-- /.phone-screen -->
+</div><!-- /.phone-frame -->
+
+<script>
+(function() {
+  // ===== Use this location button toggle =====
+  const useLocBtn = document.getElementById('useLocationBtn');
+  useLocBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    useLocBtn.classList.toggle('is-selected');
+  });
+
+  // ===== Segmented control: switches between Berth / Toilets / Common panels =====
+  const berthPanel = document.getElementById('berthPanel');
+  const toiletsPanel = document.getElementById('toiletsPanel');
+  const commonPanel = document.getElementById('commonPanel');
+  const jumpSection = document.querySelector('.jump-section');
+  document.querySelectorAll('.segment-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+      const seg = btn.dataset.seg;
+      // Show/hide panels
+      berthPanel.hidden = seg !== 'berths';
+      toiletsPanel.hidden = seg !== 'toilets';
+      commonPanel.hidden = seg !== 'common';
+      // Jump-to-bay is only relevant for berths
+      jumpSection.style.display = seg === 'berths' ? '' : 'none';
+    });
+  });
+
+  // ===== Coach picker =====
+  const coachState = {
+    home: 'S4',
+    current: 'S4'
+  };
+  const coachPill = document.getElementById('coachPill');
+  const coachPicker = document.getElementById('coachPicker');
+  const coachPillValue = document.getElementById('coachPillValue');
+  const coachContextHint = document.getElementById('coachContextHint');
+
+  coachPill.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willOpen = coachPicker.hidden;
+    coachPicker.hidden = !willOpen;
+    coachPill.classList.toggle('is-open', willOpen);
+  });
+
+  document.querySelectorAll('.coach-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.coach-btn').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+      const newCoach = btn.dataset.coach;
+      coachState.current = newCoach;
+      coachPillValue.textContent = newCoach;
+      // Update hint based on home vs current
+      if (newCoach !== coachState.home) {
+        coachContextHint.textContent = `Reporting from ${newCoach} · your seat: ${coachState.home}`;
+        coachContextHint.classList.add('is-changed');
+      } else {
+        coachContextHint.textContent = '';
+        coachContextHint.classList.remove('is-changed');
+      }
+      // Reset bay to Bay 1 of the new coach + clear berth selection
+      document.querySelectorAll('.bay-btn').forEach(b => b.classList.remove('is-selected'));
+      const bay1 = document.querySelector('.bay-btn[data-bay="1"]');
+      if (bay1) bay1.classList.add('is-selected');
+      renderBay(1);
+      // Auto-close picker after a short pause for confirmation
+      setTimeout(() => {
+        coachPicker.hidden = true;
+        coachPill.classList.remove('is-open');
+      }, 250);
+    });
+  });
+
+
+  // Each bay holds 8 berths. We render them simply as a 4×2 grid matching the screenshot.
+  // Order in HTML: row1 = base+1(Up), base+2(Mid), base+3(Low), base+7(Low)
+  //                row2 = base+4(Up), base+5(Mid), base+6(Low), base+8(Low)
+  // (Selection on the 4th cell of row 1 is the user's "home" berth 31 for bay 4)
+  function renderBay(bayNum) {
+    const base = (bayNum - 1) * 8;
+    const cells = document.querySelectorAll('.berth-btn');
+    // Match the order in the HTML markup
+    const order = [
+      { n: base + 1, pos: 'Up' },
+      { n: base + 2, pos: 'Mid' },
+      { n: base + 3, pos: 'Low' },
+      { n: base + 7, pos: 'Low' },
+      { n: base + 4, pos: 'Up' },
+      { n: base + 5, pos: 'Mid' },
+      { n: base + 6, pos: 'Low' },
+      { n: base + 8, pos: 'Low' }
+    ];
+    cells.forEach((cell, i) => {
+      cell.dataset.berth = order[i].n;
+      cell.querySelector('.berth-num').textContent = order[i].n;
+      cell.querySelector('.berth-pos').textContent = order[i].pos;
+    });
+    // Update header
+    document.getElementById('bayLabel').textContent = `Bay ${bayNum}`;
+    document.getElementById('bayRangeLabel').textContent = `Berth ${base + 1}–${base + 8}`;
+    // Clear selection
+    cells.forEach(c => c.classList.remove('is-selected'));
+    // Restore home selection only for Bay 4 of the home coach
+    if (bayNum === 4 && coachState.current === coachState.home) {
+      const sel = document.querySelector('.berth-btn[data-berth="31"]');
+      if (sel) sel.classList.add('is-selected');
+    }
+  }
+
+  document.querySelectorAll('.bay-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.bay-btn').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+      const bayNum = parseInt(btn.dataset.bay, 10);
+      renderBay(bayNum);
+    });
+  });
+
+  // ===== Berth buttons =====
+  document.querySelectorAll('.berth-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.berth-btn').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+    });
+  });
+
+  // ===== Facility cells (toilets + common) — single select per panel =====
+  document.querySelectorAll('.facility-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      // Single-select within the panel the cell belongs to
+      const panel = cell.closest('.location-panel') || cell.closest('.berth-panel');
+      panel.querySelectorAll('.facility-cell').forEach(c => c.classList.remove('is-selected'));
+      cell.classList.add('is-selected');
+    });
+  });
+
+  // ===== Submit button (decorative) =====
+  document.getElementById('submitBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  // ===== Back button (decorative) =====
+  document.getElementById('backBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  // ===== Attach buttons (decorative) =====
+  document.getElementById('attachPhoto').addEventListener('click', (e) => e.stopPropagation());
+  document.getElementById('attachVoice').addEventListener('click', (e) => e.stopPropagation());
+
+  // =========================================================
+  // AUTO-TAP INDICATOR LOOP
+  // Visible from start → travels to "Use this location" → taps
+  // (button changes to "Selected") → moves down to Submit → taps
+  // → disappears → reset → repeat.
+  // =========================================================
+  const indicator = document.getElementById('autoTapIndicator');
+  const phoneContent = document.getElementById('phoneContent');
+  const submitBtn = document.getElementById('submitBtn');
+  const INDICATOR_HALF = 19;
+
+  function setPos(tx, ty) {
+    indicator.style.setProperty('--tx', tx + 'px');
+    indicator.style.setProperty('--ty', ty + 'px');
+  }
+
+  function getElementCenterPos(el) {
+    const rect = el.getBoundingClientRect();
+    const containerRect = phoneContent.getBoundingClientRect();
+    const tx = rect.left - containerRect.left + rect.width / 2 - INDICATOR_HALF;
+    const ty = rect.top - containerRect.top + rect.height / 2 - INDICATOR_HALF + phoneContent.scrollTop;
+    return { tx, ty };
+  }
+
+  function getStartPos() {
+    // Visible from start near the top-right, clear of status bar/back/content
+    return {
+      tx: phoneContent.clientWidth - 38 - 6,
+      ty: 8 + phoneContent.scrollTop
+    };
+  }
+
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  function jumpPos(tx, ty) {
+    indicator.style.transition = 'none';
+    setPos(tx, ty);
+    indicator.offsetHeight;
+    indicator.style.transition = '';
+  }
+
+  async function runIndicatorLoop() {
+    await sleep(300);
+
+    // Show at top-right rest
+    const start = getStartPos();
+    jumpPos(start.tx, start.ty);
+    await sleep(80);
+    indicator.classList.add('is-visible');
+
+    while (true) {
+      // PHASE 1 — Hold at start for 1.5s
+      await sleep(1500);
+
+      // PHASE 2 — Move to Use this location button center
+      const target1 = getElementCenterPos(useLocBtn);
+      setPos(target1.tx, target1.ty);
+      await sleep(1400);
+
+      // PHASE 3 — Tap (toggle to Selected)
+      indicator.classList.add('is-tapping');
+      useLocBtn.classList.add('is-auto-pressed');
+      await sleep(220);
+      indicator.classList.remove('is-tapping');
+      // Apply the selection
+      useLocBtn.classList.add('is-selected');
+      useLocBtn.classList.remove('is-auto-pressed');
+      await sleep(900);
+
+      // PHASE 4 — Move to Submit; if content overflows, scroll to bottom first
+      await sleep(400);
+      // Auto-scroll to bottom if content overflows the viewport
+      const needsScroll = phoneContent.scrollHeight > phoneContent.clientHeight + 4;
+      if (needsScroll) {
+        phoneContent.scrollTo({ top: phoneContent.scrollHeight, behavior: 'smooth' });
+        await sleep(450); // allow scroll to begin so getBoundingClientRect is correct
+      }
+      const target2 = getElementCenterPos(submitBtn);
+      setPos(target2.tx, target2.ty);
+      await sleep(1500);
+
+      // PHASE 5 — Tap Submit
+      indicator.classList.add('is-tapping');
+      submitBtn.classList.add('is-auto-pressed');
+      await sleep(220);
+      indicator.classList.remove('is-tapping');
+      await sleep(420);
+      submitBtn.classList.remove('is-auto-pressed');
+      await sleep(800);
+
+      // PHASE 6 — Disappear
+      indicator.classList.remove('is-visible');
+      await sleep(600);
+
+      // Scroll back to top for the next cycle
+      phoneContent.scrollTo({ top: 0, behavior: 'smooth' });
+      await sleep(500);
+
+      // PHASE 7 — Reset state for next loop
+      useLocBtn.classList.remove('is-selected');
+      await sleep(400);
+
+      // PHASE 8 — Reset indicator to start
+      const restart = getStartPos();
+      jumpPos(restart.tx, restart.ty);
+      await sleep(150);
+      indicator.classList.add('is-visible');
+    }
+  }
+  if (indicator && useLocBtn && submitBtn) {
+    runIndicatorLoop();
+  }
+})();
+</script>
+
+</body>
+</html>
